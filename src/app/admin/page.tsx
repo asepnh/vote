@@ -2,6 +2,7 @@ import Link from "next/link";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { events } from "@/db/schema";
+import { DateRange } from "@/components/date-range";
 import { logoutAdmin } from "@/app/actions/admin-auth";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +44,10 @@ export default async function AdminDashboardPage() {
                 Owner: {event.ownerEmail ?? "—"}
               </p>
               <p className="text-sm text-gray-500">
-                {event.startsAt.toLocaleString()} → {event.endsAt.toLocaleString()}
+                <DateRange
+                  start={event.startsAt.toISOString()}
+                  end={event.endsAt.toISOString()}
+                />
               </p>
             </div>
             <Link

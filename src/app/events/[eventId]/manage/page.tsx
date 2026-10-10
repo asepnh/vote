@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { candidates, events } from "@/db/schema";
 import { isAdminAuthenticated } from "@/lib/admin-session";
 import { getUserEmail } from "@/lib/user-session";
+import { DateTimeLocalField } from "@/components/datetime-local-field";
 import {
   addCandidate,
   deleteCandidate,
@@ -13,11 +14,6 @@ import {
 } from "@/app/actions/events";
 
 export const dynamic = "force-dynamic";
-
-function toLocalInputValue(date: Date) {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
 
 export default async function ManageEventPage({
   params,
@@ -98,7 +94,10 @@ export default async function ManageEventPage({
         </a>
       </div>
 
-      <form action={updateEventWithId} className="mb-10 flex flex-col gap-4">
+      <form
+        action={updateEventWithId}
+        className="mb-10 flex flex-col gap-4"
+      >
         <label className="flex flex-col gap-1 text-sm">
           Title
           <input
@@ -117,26 +116,16 @@ export default async function ManageEventPage({
             className="rounded-md border border-gray-300 px-3 py-2"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Voting starts
-          <input
-            type="datetime-local"
-            name="startsAt"
-            defaultValue={toLocalInputValue(event.startsAt)}
-            required
-            className="rounded-md border border-gray-300 px-3 py-2"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Voting ends
-          <input
-            type="datetime-local"
-            name="endsAt"
-            defaultValue={toLocalInputValue(event.endsAt)}
-            required
-            className="rounded-md border border-gray-300 px-3 py-2"
-          />
-        </label>
+        <DateTimeLocalField
+          name="startsAt"
+          label="Voting starts"
+          defaultValueISO={event.startsAt.toISOString()}
+        />
+        <DateTimeLocalField
+          name="endsAt"
+          label="Voting ends"
+          defaultValueISO={event.endsAt.toISOString()}
+        />
         <div className="flex items-center gap-3">
           <button
             type="submit"

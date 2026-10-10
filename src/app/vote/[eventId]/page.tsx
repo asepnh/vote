@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { candidates, events } from "@/db/schema";
+import { DateRange } from "@/components/date-range";
 import { VoteForm } from "./vote-form";
 
 export const dynamic = "force-dynamic";
@@ -35,8 +36,11 @@ export default async function VotePage({
         <p className="mt-2 text-gray-600">{event.description}</p>
       )}
       <p className="mt-1 text-sm text-gray-500">
-        Voting window: {event.startsAt.toLocaleString()} →{" "}
-        {event.endsAt.toLocaleString()}
+        Voting window:{" "}
+        <DateRange
+          start={event.startsAt.toISOString()}
+          end={event.endsAt.toISOString()}
+        />
       </p>
 
       <div className="mt-8">

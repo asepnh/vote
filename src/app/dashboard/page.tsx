@@ -3,6 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { events } from "@/db/schema";
 import { getUserEmail } from "@/lib/user-session";
+import { DateRange } from "@/components/date-range";
 import { logoutUser } from "@/app/actions/user-auth";
 
 export const dynamic = "force-dynamic";
@@ -51,7 +52,10 @@ export default async function DashboardPage() {
                 {event.title}
               </Link>
               <p className="text-sm text-gray-500">
-                {event.startsAt.toLocaleString()} → {event.endsAt.toLocaleString()}
+                <DateRange
+                  start={event.startsAt.toISOString()}
+                  end={event.endsAt.toISOString()}
+                />
               </p>
             </div>
             <Link

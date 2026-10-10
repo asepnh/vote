@@ -1,4 +1,5 @@
 import { createEvent } from "@/app/actions/events";
+import { DateTimeLocalField } from "@/components/datetime-local-field";
 
 export default function NewEventPage() {
   return (
@@ -21,24 +22,8 @@ export default function NewEventPage() {
             className="rounded-md border border-gray-300 px-3 py-2"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Voting starts
-          <input
-            type="datetime-local"
-            name="startsAt"
-            required
-            className="rounded-md border border-gray-300 px-3 py-2"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Voting ends
-          <input
-            type="datetime-local"
-            name="endsAt"
-            required
-            className="rounded-md border border-gray-300 px-3 py-2"
-          />
-        </label>
+        <DateTimeLocalField name="startsAt" label="Voting starts" />
+        <DateTimeLocalField name="endsAt" label="Voting ends" />
         <button
           type="submit"
           className="mt-2 rounded-md bg-gray-900 px-4 py-2 text-white"
