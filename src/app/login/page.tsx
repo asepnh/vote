@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { loginUser } from "@/app/actions/user-auth";
 
 export default function LoginPage() {
@@ -11,7 +12,7 @@ export default function LoginPage() {
       <div>
         <h1 className="text-2xl font-semibold">Log in</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Enter your email to create and manage your own voting events.
+          Log in to create and manage your own voting events.
         </p>
       </div>
       <form action={formAction} className="flex flex-col gap-3">
@@ -23,15 +24,28 @@ export default function LoginPage() {
           autoFocus
           className="rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-gray-500"
         />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+          className="rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-gray-500"
+        />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
           disabled={pending}
           className="rounded-md bg-gray-900 px-3 py-2 text-white disabled:opacity-50"
         >
-          {pending ? "Signing in…" : "Continue"}
+          {pending ? "Signing in…" : "Log in"}
         </button>
       </form>
+      <p className="text-sm text-gray-500">
+        Don&apos;t have an account?{" "}
+        <Link href="/signup" className="underline">
+          Sign up
+        </Link>
+      </p>
     </main>
   );
 }
