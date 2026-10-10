@@ -15,18 +15,16 @@ export default async function AdminDashboardPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Voting Events</h1>
+        <div>
+          <h1 className="text-2xl font-semibold">All Voting Events</h1>
+          <p className="text-sm text-gray-500">
+            Committee oversight — every event created by any user.
+          </p>
+        </div>
         <form action={logoutAdmin}>
           <button className="text-sm text-gray-500 underline">Log out</button>
         </form>
       </div>
-
-      <Link
-        href="/admin/events/new"
-        className="mb-6 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm text-white"
-      >
-        + New Event
-      </Link>
 
       <ul className="flex flex-col gap-3">
         {allEvents.map((event) => (
@@ -36,11 +34,14 @@ export default async function AdminDashboardPage() {
           >
             <div>
               <Link
-                href={`/admin/events/${event.id}`}
+                href={`/events/${event.id}/manage`}
                 className="font-medium hover:underline"
               >
                 {event.title}
               </Link>
+              <p className="text-sm text-gray-500">
+                Owner: {event.ownerEmail ?? "—"}
+              </p>
               <p className="text-sm text-gray-500">
                 {event.startsAt.toLocaleString()} → {event.endsAt.toLocaleString()}
               </p>

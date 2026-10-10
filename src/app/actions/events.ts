@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { candidates, events } from "@/db/schema";
+import { getUserEmail } from "@/lib/user-session";
+import { requireEventAccess } from "@/lib/event-access";
 
 function parseDateTime(value: FormDataEntryValue | null): Date {
   if (typeof value !== "string" || !value) {
@@ -18,6 +20,11 @@ function parseDateTime(value: FormDataEntryValue | null): Date {
 }
 
 export async function createEvent(formData: FormData) {
+  const ownerEmail = await getUserEmail();
+  if (!ownerEmail) {
+    redirect("/login");
+  }
+
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const startsAt = parseDateTime(formData.get("startsAt"));
@@ -28,14 +35,16 @@ export async function createEvent(formData: FormData) {
 
   const [created] = await db
     .insert(events)
-    .values({ title, description: description || null, startsAt, endsAt })
+    .values({ title, description: description || null, ownerEmail, startsAt, endsAt })
     .returning({ id: events.id });
 
-  revalidatePath("/admin");
-  redirect(`/admin/events/${created.id}`);
+  revalidatePath("/dashboard");
+  redirect(`/events/${created.id}/manage`);
 }
 
 export async function updateEvent(eventId: string, formData: FormData) {
+  await requireEventAccess(eventId);
+
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const startsAt = parseDateTime(formData.get("startsAt"));
@@ -49,17 +58,23 @@ export async function updateEvent(eventId: string, formData: FormData) {
     .set({ title, description: description || null, startsAt, endsAt })
     .where(eq(events.id, eventId));
 
-  revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/events/${eventId}/manage`);
+  revalidatePath("/dashboard");
   revalidatePath("/admin");
 }
 
 export async function deleteEvent(eventId: string) {
+  const { isSuperAdmin } = await requireEventAccess(eventId);
+
   await db.delete(events).where(eq(events.id, eventId));
+  revalidatePath("/dashboard");
   revalidatePath("/admin");
-  redirect("/admin");
+  redirect(isSuperAdmin ? "/admin" : "/dashboard");
 }
 
 export async function addCandidate(eventId: string, formData: FormData) {
+  await requireEventAccess(eventId);
+
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const cvUrl = String(formData.get("cvUrl") ?? "").trim();
@@ -73,10 +88,12 @@ export async function addCandidate(eventId: string, formData: FormData) {
     cvUrl: cvUrl || null,
   });
 
-  revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/events/${eventId}/manage`);
 }
 
 export async function deleteCandidate(eventId: string, candidateId: string) {
+  await requireEventAccess(eventId);
+
   await db.delete(candidates).where(eq(candidates.id, candidateId));
-  revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/events/${eventId}/manage`);
 }

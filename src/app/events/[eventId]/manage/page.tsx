@@ -3,6 +3,8 @@ import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { candidates, events } from "@/db/schema";
+import { isAdminAuthenticated } from "@/lib/admin-session";
+import { getUserEmail } from "@/lib/user-session";
 import {
   addCandidate,
   deleteCandidate,
@@ -17,7 +19,7 @@ function toLocalInputValue(date: Date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-export default async function EventDetailPage({
+export default async function ManageEventPage({
   params,
 }: {
   params: Promise<{ eventId: string }>;
@@ -29,6 +31,24 @@ export default async function EventDetailPage({
   });
   if (!event) notFound();
 
+  const [isSuperAdmin, userEmail] = await Promise.all([
+    isAdminAuthenticated(),
+    getUserEmail(),
+  ]);
+  const isOwner = Boolean(userEmail && userEmail === event.ownerEmail);
+
+  if (!isSuperAdmin && !isOwner) {
+    return (
+      <main className="mx-auto max-w-lg px-6 py-10">
+        <h1 className="text-xl font-semibold">Access denied</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          You don&apos;t have permission to manage this event. Only the
+          event&apos;s creator or a committee super admin can.
+        </p>
+      </main>
+    );
+  }
+
   const candidateList = await db
     .select()
     .from(candidates)
@@ -39,14 +59,20 @@ export default async function EventDetailPage({
   const deleteEventWithId = deleteEvent.bind(null, eventId);
   const addCandidateWithId = addCandidate.bind(null, eventId);
 
+  const voteUrl = `/vote/${eventId}`;
+  const resultsUrl = `/vote/${eventId}/results`;
+
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
       <div className="mb-6 flex items-center justify-between">
-        <Link href="/admin" className="text-sm text-gray-500 underline">
+        <Link
+          href={isSuperAdmin ? "/admin" : "/dashboard"}
+          className="text-sm text-gray-500 underline"
+        >
           ← All events
         </Link>
         <Link
-          href={`/vote/${eventId}/results`}
+          href={resultsUrl}
           className="text-sm text-blue-600 underline"
           target="_blank"
         >
@@ -54,7 +80,23 @@ export default async function EventDetailPage({
         </Link>
       </div>
 
-      <h1 className="mb-6 text-2xl font-semibold">Edit Event</h1>
+      <h1 className="mb-2 text-2xl font-semibold">Edit Event</h1>
+      <p className="mb-1 text-sm text-gray-500">
+        Owner: {event.ownerEmail ?? "—"}
+      </p>
+
+      <div className="mb-8 rounded-md border border-blue-200 bg-blue-50 p-4">
+        <p className="text-sm font-medium text-blue-900">
+          Share this link with students to let them vote:
+        </p>
+        <a
+          href={voteUrl}
+          target="_blank"
+          className="mt-1 block break-all text-sm text-blue-700 underline"
+        >
+          {voteUrl}
+        </a>
+      </div>
 
       <form action={updateEventWithId} className="mb-10 flex flex-col gap-4">
         <label className="flex flex-col gap-1 text-sm">

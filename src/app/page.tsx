@@ -8,10 +8,13 @@ export default function HomePage() {
         Student representative body voting platform.
       </p>
       <Link
-        href="/admin/login"
+        href="/login"
         className="rounded-md bg-gray-900 px-4 py-2 text-white"
       >
-        Committee login
+        Create or manage a voting event
+      </Link>
+      <Link href="/admin/login" className="text-sm text-gray-500 underline">
+        Committee oversight login
       </Link>
     </main>
   );
